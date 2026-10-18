@@ -1,319 +1,331 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台股短線當沖強勢股篩選器</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-        }
-        .tw-red { color: #ff4d4f; } /* 台股上漲為紅 */
-        .tw-green { color: #52c41a; } /* 台股下跌為綠 */
-        .bg-tw-red { background-color: rgba(255, 77, 79, 0.1); }
-        .bg-tw-green { background-color: rgba(82, 196, 26, 0.1); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>Stock Rebound Radar｜台股短線交易雷達</title>
+<style>
+:root{--bg:#0b1220;--panel:#111b2d;--panel2:#152238;--line:#26364d;--text:#edf3fc;--muted:#91a3bb;--green:#2dd4a7;--red:#ff6b7a;--blue:#78aaff;--yellow:#f6c76b;--shadow:0 12px 32px #0002}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#172944 0,transparent 35%),var(--bg);color:var(--text);font:14px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}
+button,input,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#1a2940;color:var(--text);padding:9px 12px;border-radius:10px;transition:.15s}button:hover{border-color:#6887b5;background:#203653}button.primary{background:#5d8df4;border-color:#5d8df4;color:#061225;font-weight:750}button.danger{color:#ff9ca6}button:disabled{opacity:.5;cursor:not-allowed}
+input,select{background:#0d1728;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px;min-width:0;width:100%}input:focus,select:focus{outline:1px solid var(--blue);border-color:var(--blue)}label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+a{color:var(--blue)}.app{max-width:1480px;margin:auto;padding:22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#76a9ff,#52d6b4);color:#081426;font-size:22px;font-weight:900}.brand h1{font-size:20px;line-height:1.2;margin:0}.brand p{margin:4px 0 0;color:var(--muted);font-size:12px}.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.status{border:1px solid #355d58;background:#122b2a;color:#7ce4c8;padding:6px 10px;border-radius:999px;font-size:11px}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px}.sidebar{background:#0d1728b8;border:1px solid var(--line);border-radius:16px;padding:12px;height:max-content;position:sticky;top:16px}.navbtn{width:100%;text-align:left;background:transparent;border-color:transparent;margin:3px 0;color:var(--muted)}.navbtn.active{background:#1b2e49;color:var(--text);border-color:#2c476b}.side-note{margin-top:18px;padding:12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.main{min-width:0}.page-head{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap;margin-bottom:18px}.page-head h2{font-size:24px;margin:0}.page-head p{margin:5px 0 0;color:var(--muted)}.filters{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.field{min-width:125px}.field.search{min-width:200px;flex:1}.grid{display:grid;gap:14px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:15px}.card{background:linear-gradient(145deg,#121e31,#101a2b);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);min-width:0}.metric-label{font-size:12px;color:var(--muted)}.metric-value{font-size:25px;font-weight:780;letter-spacing:-.5px;margin-top:6px}.metric-foot{font-size:11px;color:var(--muted);margin-top:3px}.up{color:var(--red)}.down{color:var(--green)}.neutral{color:var(--muted)}.market-note{padding:10px 12px;background:#192a40;border:1px solid #2b405a;border-radius:12px;color:#c2d1e5;margin-bottom:16px;font-size:12px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}.section-head h3{margin:0;font-size:16px}.tabs{display:flex;gap:6px;flex-wrap:wrap}.tab{padding:7px 10px;font-size:12px}.tab.active{background:#dbeafe;color:#0b1a31;border-color:#dbeafe;font-weight:750}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:760px;font-variant-numeric:tabular-nums}th,td{text-align:right;padding:12px 13px;border-bottom:1px solid #223149;white-space:nowrap}th{font-size:11px;color:var(--muted);font-weight:650;background:#101a2a;position:sticky;top:0}td{font-size:13px}td:first-child,th:first-child,td:nth-child(2),th:nth-child(2){text-align:left}.stock-name{font-weight:750}.stock-code{color:var(--muted);font-size:11px}.row-actions{display:flex;gap:6px;justify-content:flex-end}.small-btn{padding:6px 8px;font-size:11px}.star{color:var(--yellow);font-size:17px;border:0;background:transparent;padding:0 4px}.empty{text-align:center;color:var(--muted);padding:30px}.subgrid{grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);margin-top:15px}.chartbox{height:250px;position:relative}.chartbox canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:7px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.detail-title{display:flex;justify-content:space-between;gap:12px;align-items:start}.detail-title h3{margin:0;font-size:19px}.detail-price{font-size:26px;font-weight:800;margin:12px 0 2px}.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.mini{padding:10px;background:#0d1728;border:1px solid #223149;border-radius:10px}.mini span{display:block;color:var(--muted);font-size:11px}.mini b{display:block;margin-top:3px;font-size:14px}.score-ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) var(--score,0%),#26364d 0);position:relative;flex-shrink:0}.score-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:#111b2d}.score-ring b{z-index:1;font-size:23px}.score-line{margin:10px 0}.score-label{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.bar{height:5px;background:#24344b;border-radius:8px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:var(--blue);border-radius:8px}.hint{font-size:12px;color:var(--muted)}.notice{border-left:3px solid var(--yellow);padding:10px 12px;background:#282419;color:#e6d5aa;border-radius:0 8px 8px 0;font-size:12px;margin-top:12px}.two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-grid .wide{grid-column:1/-1}.table-actions{display:flex;gap:8px;flex-wrap:wrap}.pill{display:inline-block;padding:3px 7px;border-radius:7px;background:#1d3048;color:#c6d8f1;font-size:11px}.foot{color:var(--muted);font-size:11px;margin:20px 0 4px}.hidden{display:none!important}.toast{position:fixed;right:20px;bottom:20px;background:#e5eefb;color:#0b1729;padding:12px 16px;border-radius:10px;box-shadow:var(--shadow);z-index:50;max-width:min(360px,calc(100vw - 40px))}.modal-backdrop{position:fixed;inset:0;background:#030712bb;display:grid;place-items:center;padding:16px;z-index:30}.modal{width:min(640px,100%);max-height:90vh;overflow:auto;background:#111b2d;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 24px 80px #0008}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal-head h3{margin:0}.xbtn{font-size:20px;padding:3px 9px}.source{overflow-wrap:anywhere}.mobile-menu{display:none}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{position:static;display:flex;gap:5px;overflow:auto;padding:7px}.navbtn{width:auto;white-space:nowrap}.side-note{display:none}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.subgrid{grid-template-columns:1fr}}
+@media(max-width:620px){.app{padding:12px}.topbar{align-items:flex-start}.brand h1{font-size:16px}.logo{width:36px;height:36px}.top-actions{justify-content:flex-end}.top-actions .status{display:none}.page-head h2{font-size:21px}.metrics{gap:8px}.card{padding:12px}.metric-value{font-size:21px}.filters{width:100%}.field,.field.search{min-width:calc(50% - 5px);flex:1}.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col,.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.chartbox{height:210px}}
+</style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col">
-
-    <!-- 導覽列 -->
-    <header class="border-b border-gray-800 bg-gray-900 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
-        <div class="flex items-center space-x-3">
-            <span class="text-2xl">📈</span>
-            <h1 class="text-xl font-bold text-white tracking-wide">台股短線當沖強勢股篩選器</h1>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">↗</div><div><h1>Stock Rebound Radar</h1><p>台股短線交易雷達 · 研究與模擬工具</p></div></div>
+  <div class="top-actions"><span class="status" id="dataStatus">資料來源待載入</span><button id="refreshBtn">↻ 重新載入</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <button class="navbtn active" data-view="overview">▦　市場總覽</button>
+    <button class="navbtn" data-view="watchlist">☆　我的自選</button>
+    <button class="navbtn" data-view="trades">⇄　模擬交易</button>
+    <button class="navbtn" data-view="method">ⓘ　評分與資料</button>
+    <div class="side-note">只供研究與模擬，不構成投資建議。歷史表現不代表未來。</div>
+  </aside>
+  <main class="main">
+    <section id="view-overview">
+      <div class="page-head"><div><h2>市場異動掃描</h2><p>找出漲跌幅與成交量異常的股票，再深入檢視條件。</p></div>
+        <div class="filters"><div class="field"><label for="dateSelect">交易日期</label><select id="dateSelect"><option value="">載入資料中…</option></select></div><div class="field search"><label for="searchInput">搜尋股票</label><input id="searchInput" placeholder="輸入代號或名稱，例如 2330"></div></div>
+      </div>
+      <div class="market-note" id="marketNote">正在嘗試載入公開歷史行情。資料未成功載入前，不會以虛構行情填補。</div>
+      <div class="grid metrics">
+        <div class="card"><div class="metric-label">當日上漲</div><div class="metric-value up" id="upCount">—</div><div class="metric-foot">目前載入的股票範圍</div></div>
+        <div class="card"><div class="metric-label">當日下跌</div><div class="metric-value down" id="downCount">—</div><div class="metric-foot">目前載入的股票範圍</div></div>
+        <div class="card"><div class="metric-label">最大漲幅</div><div class="metric-value up" id="maxUp">—</div><div class="metric-foot" id="maxUpName">等待資料</div></div>
+        <div class="card"><div class="metric-label">最大跌幅</div><div class="metric-value down" id="maxDown">—</div><div class="metric-foot" id="maxDownName">等待資料</div></div>
+      </div>
+      <div class="card">
+        <div class="section-head"><h3>股票排行榜</h3><div class="tabs" id="rankTabs">
+          <button class="tab active" data-rank="decliners">跌幅排行</button><button class="tab" data-rank="gainers">漲幅排行</button><button class="tab" data-rank="volume">成交量</button><button class="tab" data-rank="rebound">反彈候選</button>
+        </div></div>
+        <div class="filters" style="margin-bottom:12px"><div class="field"><label for="minAbsMove">最小漲跌幅（%）</label><input id="minAbsMove" type="number" value="0" min="0" max="20" step=".5"></div><div class="field"><label for="minVolume">最低成交量（股）</label><input id="minVolume" type="number" value="0" min="0" step="1000"></div><div class="field"><label for="limitSelect">顯示筆數</label><select id="limitSelect"><option>10</option><option selected>20</option><option>50</option><option>100</option></select></div><button id="applyFilters" class="primary">套用篩選</button><button id="resetFilters">重設</button></div>
+        <div class="table-wrap"><table><thead><tr><th>自選</th><th>股票</th><th>收盤價</th><th>漲跌幅</th><th>成交量</th><th>RSI(14)</th><th>反彈分數</th><th>操作</th></tr></thead><tbody id="stockRows"><tr><td colspan="8" class="empty">正在載入資料…</td></tr></tbody></table></div>
+        <div class="foot" id="resultCount">尚未載入行情</div>
+      </div>
+      <div class="grid subgrid">
+        <div class="card"><div class="section-head"><h3 id="chartTitle">個股近期收盤走勢</h3><span class="pill" id="chartCode">選擇股票</span></div><div class="chartbox"><canvas id="priceChart"></canvas></div><div class="legend"><span><i class="dot" style="background:#78aaff"></i>收盤價</span><span><i class="dot" style="background:#2dd4a7"></i>MA5</span><span><i class="dot" style="background:#f6c76b"></i>MA20</span></div><div class="hint" id="chartHint">點選排行榜的「分析」查看走勢。</div></div>
+        <div class="card"><div class="section-head"><h3>個股分析</h3><span class="pill">規則計分</span></div><div id="detailPanel" class="empty">請從排行榜選擇一檔股票。</div></div>
+      </div>
+    </section>
+    <section id="view-watchlist" class="hidden">
+      <div class="page-head"><div><h2>我的自選股</h2><p>只儲存在這個瀏覽器；清除網站資料可能會遺失。</p></div></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>股票</th><th>最近收盤</th><th>漲跌幅</th><th>反彈分數</th><th>操作</th></tr></thead><tbody id="watchRows"></tbody></table></div></div>
+    </section>
+    <section id="view-trades" class="hidden">
+      <div class="page-head"><div><h2>模擬交易</h2><p>設定進場、停損、停利，估算交易成本與風險報酬。</p></div><button class="primary" id="newTradeBtn">＋ 新增模擬交易</button></div>
+      <div class="grid metrics"><div class="card"><div class="metric-label">模擬交易筆數</div><div class="metric-value" id="tradeCount">0</div></div><div class="card"><div class="metric-label">總預估風險</div><div class="metric-value down" id="totalRisk">NT$ 0</div></div><div class="card"><div class="metric-label">總目標獲利</div><div class="metric-value up" id="totalReward">NT$ 0</div></div><div class="card"><div class="metric-label">成本假設</div><div class="metric-value" style="font-size:17px">可調整</div><div class="metric-foot">手續費折扣、賣出證交稅</div></div></div>
+      <div class="card"><div class="section-head"><h3>交易計畫</h3><button id="feeSettingsBtn">⚙ 成本設定</button></div><div class="table-wrap"><table><thead><tr><th>股票</th><th>進場價</th><th>股數</th><th>停損 / 停利</th><th>預估風險（含成本）</th><th>目標報酬（含成本）</th><th>風險報酬比</th><th>操作</th></tr></thead><tbody id="tradeRows"></tbody></table></div><p class="hint">以股數計算（台股零股亦可）。未計滑價、流動性、其他個別費用；實際券商折扣與稅率請自行核對。</p></div>
+    </section>
+    <section id="view-method" class="hidden">
+      <div class="page-head"><div><h2>資料來源與計分方式</h2><p>讓數字可追溯、評分可解釋。</p></div></div>
+      <div class="grid two-col">
+        <div class="card"><h3>資料來源與限制</h3><p>本頁嘗試讀取 <a href="https://github.com/voidful/tw_stocker" target="_blank" rel="noopener">voidful/tw_stocker</a> 公開 Repository 中個股 CSV 與 manifest。該專案說明資料包含台股 OHLCV，並提醒使用者自行核對資料授權、正確性與適用性。</p><p>此網頁不把來源 Repository 當成官方授權聲明。第三方資料再散布授權尚未在此程式中確認，因此網站採瀏覽器端讀取來源資料，不將整份第三方資料複製進 HTML。</p><p>資料最後日期以成功載入的個股資料為準；不同股票的日期範圍可能不同。若來源不可用、格式變動或 CORS / 網路阻擋，網站會顯示錯誤，不會以假行情替代。</p><p class="source"><a href="https://github.com/voidful/tw_stocker/tree/main/data" target="_blank" rel="noopener">查看 CSV 資料目錄</a> · <a href="https://github.com/voidful/tw_stocker/blob/main/data/manifest.json" target="_blank" rel="noopener">查看資料 manifest</a></p></div>
+        <div class="card"><h3>Rebound Score（0–100）</h3><p>這是規則式觀察分數，不是機率、預測模型或買進訊號。只用已載入的歷史 OHLCV 計算。</p>
+          <div class="score-line"><div class="score-label"><span>當日跌幅條件</span><b>0–30 分</b></div><div class="hint">跌幅較大會提高觀察分，但不代表跌越多越好。</div></div>
+          <div class="score-line"><div class="score-label"><span>成交量相對 20 日均量</span><b>0–20 分</b></div><div class="hint">量比增加可能反映關注度，也可能代表賣壓。</div></div>
+          <div class="score-line"><div class="score-label"><span>RSI(14)</span><b>0–20 分</b></div><div class="hint">RSI 偏低增加分數；超賣不保證反彈。</div></div>
+          <div class="score-line"><div class="score-label"><span>價格與均線關係</span><b>0–15 分</b></div><div class="hint">觀察價格相對 MA5 / MA20 的位置。</div></div>
+          <div class="score-line"><div class="score-label"><span>近期動能</span><b>0–15 分</b></div><div class="hint">以近 5 個交易日報酬作為條件之一。</div></div>
+          <div class="notice">分數高只表示符合較多預先設定的觀察條件。趨勢可能持續下跌，請勿單憑分數交易。</div>
         </div>
-        <!-- 日期選擇器 -->
-        <div class="flex items-center space-x-3 bg-gray-800 p-2 rounded-lg border border-gray-700">
-            <label for="dateSelect" class="text-sm text-gray-400 font-medium">觀測交易日：</label>
-            <select id="dateSelect" onchange="loadDateData()" class="bg-gray-900 text-white border border-gray-600 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500">
-                <option value="20260312">2026-03-12 (多頭全面暴動噴發日)</option>
-                <option value="20260415">2026-04-15 (恐慌權值股多頭洗盤日)</option>
-                <option value="20260520">2026-05-20 (空頭狙擊大盤大跌日)</option>
-            </select>
-        </div>
-    </header>
-
-    <main class="flex-grow p-6 max-w-7xl mx-auto w-full space-y-6">
-        
-        <!-- 大盤概況 KPI 卡片 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-xl flex flex-col justify-between">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider">今日監控焦點股</span>
-                <span id="kpiTotal" class="text-3xl font-bold text-white mt-2">-- 檔</span>
-            </div>
-            <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-xl flex flex-col justify-between border-l-4 border-l-red-500">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider">今日衝鋒強勢股 (漲幅 &gt; 7%)</span>
-                <span id="kpiUp" class="text-3xl font-bold tw-red mt-2">-- 檔</span>
-            </div>
-            <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl shadow-xl flex flex-col justify-between border-l-4 border-l-green-500">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider">今日遭殺弱勢股 (跌幅 &lt; -7%)</span>
-                <span id="kpiDown" class="text-3xl font-bold tw-green mt-2">-- 檔</span>
-            </div>
-        </div>
-
-        <!-- 榜單切換頁籤 -->
-        <div class="bg-gray-900 border border-gray-800 rounded-xl shadow-xl overflow-hidden">
-            <div class="flex border-b border-gray-800 bg-gray-950">
-                <button onclick="switchTab('topGainers')" id="btn-topGainers" class="flex-1 py-4 text-center font-semibold text-sm border-b-2 border-blue-500 text-blue-400 focus:outline-none transition">
-                    🔥 多頭主力：漲幅排行榜
-                </button>
-                <button onclick="switchTab('topLosers')" id="btn-topLosers" class="flex-1 py-4 text-center font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-white focus:outline-none transition">
-                    ❄️ 空頭狙擊：跌幅排行榜
-                </button>
-                <button onclick="switchTab('topAmplitude')" id="btn-topAmplitude" class="flex-1 py-4 text-center font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-white focus:outline-none transition">
-                    ⚡ 當沖最愛：高震盪振幅榜
-                </button>
-            </div>
-
-            <!-- 表格容器 -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-950 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
-                            <th class="py-4 px-6">代號 / 名稱</th>
-                            <th class="py-4 px-6 text-right">收盤價</th>
-                            <th class="py-4 px-6 text-right">漲跌幅</th>
-                            <th class="py-4 px-6 text-right">最高 / 最低</th>
-                            <th class="py-4 px-6 text-right">今日振幅</th>
-                            <th class="py-4 px-6 text-right">成交張數</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stockTableBody" class="divide-y divide-gray-800 text-sm">
-                        <!-- 資料由 JS 動態生成 -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <!-- 互動式個股詳細彈窗 -->
-    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold focus:outline-none">&times;</button>
-            
-            <div class="flex items-baseline space-x-3 mb-4">
-                <h3 id="modalStockTitle" class="text-2xl font-bold text-white">股票名稱</h3>
-                <span id="modalStockId" class="text-gray-400 text-sm">----</span>
-            </div>
-
-            <!-- K線與走勢擬真圖表區 -->
-            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 mb-6">
-                <canvas id="stockChart" class="w-full h-64"></canvas>
-            </div>
-
-            <!-- 策略分析面板 -->
-            <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl">
-                <h4 class="text-sm font-bold text-blue-400 tracking-wider mb-2 uppercase">💡 短線當沖策略型態判讀</h4>
-                <p id="modalStrategyText" class="text-gray-300 text-sm leading-relaxed">分析中...</p>
-            </div>
-        </div>
-    </div>
-
-    <footer class="border-t border-gray-800 bg-gray-950 py-4 text-center text-xs text-gray-600">
-        歷史真實數據精選內嵌 | 僅供當沖短線交易前端網頁互動展示使用
-    </footer>
-
-    <script>
-        // 內嵌台股真實歷史經典大行情日數據
-        const mockDatabase = {
-            "20260312": [
-                { stockId: "2330", name: "台積電", open: 980, high: 1015, low: 978, close: 1010, volume: 42150 },
-                { stockId: "2454", name: "聯發科", open: 1120, high: 1195, low: 1115, close: 1190, volume: 8450 },
-                { stockId: "2317", name: "鴻海", open: 180, high: 195.5, low: 179.5, close: 194.5, volume: 89000 },
-                { stockId: "2603", name: "長榮", open: 172, high: 181.5, low: 171, close: 179, volume: 34000 },
-                { stockId: "3443", name: "創意", open: 1250, high: 1375, low: 1240, close: 1375, volume: 4120 },
-                { stockId: "3661", name: "世芯-KY", open: 2100, high: 2310, low: 2090, close: 2310, volume: 2890 },
-                { stockId: "2382", name: "廣達", open: 245, high: 261, low: 243, close: 258, volume: 27000 },
-                { stockId: "2308", name: "台達電", open: 330, high: 345, low: 328, close: 342, volume: 920 },
-                { stockId: "2337", name: "旺宏", open: 26.5, high: 28.2, low: 26.3, close: 27.9, volume: 15400 },
-                { stockId: "2609", name: "陽明", open: 61.2, high: 65.4, low: 61.0, close: 64.8, volume: 41000 },
-                { stockId: "1513", name: "中興電", open: 162, high: 178, low: 161, close: 177, volume: 22000 }
-            ],
-            "20260415": [
-                { stockId: "2330", name: "台積電", open: 1020, high: 1055, low: 995, close: 1005, volume: 51000 },
-                { stockId: "2454", name: "聯發科", open: 1210, high: 1225, low: 1140, close: 1150, volume: 9100 },
-                { stockId: "3443", name: "創意", open: 1390, high: 1440, low: 1290, close: 1310, volume: 5600 },
-                { stockId: "3661", name: "世芯-KY", open: 2350, high: 2490, low: 2180, close: 2210, volume: 3900 },
-                { stockId: "1513", name: "中興電", open: 175, high: 192.5, low: 171, close: 188, volume: 35000 },
-                { stockId: "1519", name: "華城", open: 650, high: 715, low: 632, close: 708, volume: 8200 },
-                { stockId: "2317", name: "鴻海", open: 195, high: 197, low: 188, close: 190, volume: 72000 },
-                { stockId: "2382", name: "廣達", open: 260, high: 273, low: 251, close: 254, volume: 31000 }
-            ],
-            "20260520": [
-                { stockId: "2330", name: "台積電", open: 995, high: 998, low: 951, close: 955, volume: 58000 },
-                { stockId: "2454", name: "聯發科", open: 1140, high: 1145, low: 1065, close: 1070, volume: 11000 },
-                { stockId: "2317", name: "鴻海", open: 191, high: 192, low: 176, close: 177.5, volume: 96000 },
-                { stockId: "2603", name: "長榮", open: 178, high: 179, low: 163, close: 164.5, volume: 45000 },
-                { stockId: "3443", name: "創意", open: 1300, high: 1305, low: 1170, close: 1170, volume: 6200 },
-                { stockId: "3661", name: "世芯-KY", open: 2200, high: 2210, low: 1980, close: 1980, volume: 4100 },
-                { stockId: "2382", name: "廣達", open: 253, high: 254, low: 232, close: 234, volume: 39000 },
-                { stockId: "1519", name: "華城", open: 695, high: 702, low: 630, close: 635, volume: 9300 },
-                { stockId: "2609", name: "陽明", open: 64.0, high: 64.2, low: 59.1, close: 59.5, volume: 49000 }
-            ]
-        };
-
-        let currentData = [];
-        let currentTab = 'topGainers';
-        let chartInstance = null;
-
-        window.onload = function() {
-            loadDateData();
-        };
-
-        // 載入所選日期的數據並清洗計算
-        function loadDateData() {
-            const dateKey = document.getElementById('dateSelect').value;
-            const rawData = mockDatabase[dateKey] || [];
-
-            // 此展示資料以開盤價模擬前一日收盤價
-            currentData = rawData.map(stock => {
-                const estLastClose = stock.open;
-                const change = stock.close - estLastClose;
-                const changePercent = (change / estLastClose) * 100;
-                const amplitude = ((stock.high - stock.low) / estLastClose) * 100;
-
-                return {
-                    ...stock,
-                    lastClose: estLastClose,
-                    change,
-                    changePercent,
-                    amplitude
-                };
-            });
-
-            document.getElementById('kpiTotal').innerText = `${currentData.length} 檔`;
-            document.getElementById('kpiUp').innerText =
-                `${currentData.filter(stock => stock.changePercent >= 7).length} 檔`;
-            document.getElementById('kpiDown').innerText =
-                `${currentData.filter(stock => stock.changePercent <= -7).length} 檔`;
-            renderTable();
-        }
-
-        // 渲染排行榜表格
-        function renderTable() {
-            const sorted = [...currentData];
-            if (currentTab === 'topGainers') {
-                sorted.sort((a, b) => b.changePercent - a.changePercent);
-            } else if (currentTab === 'topLosers') {
-                sorted.sort((a, b) => a.changePercent - b.changePercent);
-            } else if (currentTab === 'topAmplitude') {
-                sorted.sort((a, b) => b.amplitude - a.amplitude);
-            }
-
-            const tbody = document.getElementById('stockTableBody');
-            tbody.innerHTML = '';
-
-            sorted.forEach(stock => {
-                const changeClass = stock.changePercent > 0
-                    ? 'tw-red'
-                    : stock.changePercent < 0 ? 'tw-green' : 'text-gray-400';
-                const changePrefix = stock.changePercent > 0 ? '+' : '';
-                const tr = document.createElement('tr');
-
-                tr.className = 'hover:bg-gray-800 transition cursor-pointer border-b border-gray-800';
-                tr.onclick = () => openStockDetail(stock);
-                tr.innerHTML = `
-                    <td class="py-4 px-6">
-                        <span class="font-semibold text-white">${stock.stockId}</span>
-                        <span class="text-gray-400 text-xs ml-2">${stock.name}</span>
-                    </td>
-                    <td class="py-4 px-6 text-right text-white">${stock.close.toFixed(2)}</td>
-                    <td class="py-4 px-6 text-right font-semibold ${changeClass}">
-                        ${changePrefix}${stock.changePercent.toFixed(2)}%
-                    </td>
-                    <td class="py-4 px-6 text-right text-gray-300">
-                        ${stock.high.toFixed(2)} / ${stock.low.toFixed(2)}
-                    </td>
-                    <td class="py-4 px-6 text-right text-yellow-400">${stock.amplitude.toFixed(2)}%</td>
-                    <td class="py-4 px-6 text-right text-gray-300">${stock.volume.toLocaleString()}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // 頁籤切換
-        function switchTab(tabId) {
-            currentTab = tabId;
-            ['topGainers', 'topLosers', 'topAmplitude'].forEach(tab => {
-                const btn = document.getElementById(`btn-${tab}`);
-                if (tab === tabId) {
-                    btn.classList.add('border-blue-500', 'text-blue-400');
-                    btn.classList.remove('border-transparent', 'text-gray-400');
-                } else {
-                    btn.classList.remove('border-blue-500', 'text-blue-400');
-                    btn.classList.add('border-transparent', 'text-gray-400');
-                }
-            });
-            renderTable();
-        }
-
-        // 開啟詳細彈窗與 Chart.js 圖表渲染
-        function openStockDetail(stock) {
-            document.getElementById('modalStockTitle').innerText = stock.name;
-            document.getElementById('modalStockId').innerText = `#${stock.stockId}`;
-
-            let strategyText;
-            if (stock.changePercent >= 9.5) {
-                strategyText = '⚡ <strong>強勢鎖漲停型態：</strong> 該股今日直奔漲停板，多頭攻勢極其剽悍。短線隔日沖大戶鎖單意願高。明日當沖策略：密切注意隔日開盤是否有「溢價跳空」，若開盤過高但隨即爆量無法鎖回，需防範主力高檔出貨，切勿盲目追多。';
-            } else if (stock.changePercent <= -9.5) {
-                strategyText = '❄️ <strong>弱勢鎖跌停型態：</strong> 今日重挫觸及跌停，市場賣壓呈現恐慌性拋售。此類個股當沖切忌盲目摸底。明日當沖策略：若明日開盤續弱並跌破今日低點，可順勢偏空短操，直到盤中看見明顯量縮止穩訊號。';
-            } else if (stock.amplitude > 8) {
-                strategyText = `⚡ <strong>高震盪當沖首選型態：</strong> 當天上下振幅高達 ${stock.amplitude.toFixed(1)}%，表示盤中多空交戰極為劇烈。建議搭配 5 分鐘 K 線尋找箱體突破點。`;
-            } else {
-                strategyText = `💡 <strong>標準溫和波動型態：</strong> 今日收在 ${stock.close.toFixed(2)}。波動相對穩健，適合技術指標型當沖。建議觀察早盤前 30 分鐘的量能變動。`;
-            }
-
-            document.getElementById('modalStrategyText').innerHTML = strategyText;
-            document.getElementById('detailModal').classList.remove('hidden');
-
-            const ctx = document.getElementById('stockChart').getContext('2d');
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            const mockTimeline = ['09:00', '09:30', '10:30', '11:30', '12:30', '13:30'];
-            const mockPrices = stock.changePercent > 0
-                ? [stock.open, (stock.open + stock.low) / 2, stock.low, (stock.open + stock.high) / 2, stock.high, stock.close]
-                : [stock.open, stock.high, (stock.open + stock.high) / 2, (stock.open + stock.low) / 2, stock.low, stock.close];
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: mockTimeline,
-                    datasets: [{
-                        label: '盤中模擬走勢（元）',
-                        data: mockPrices,
-                        borderColor: stock.changePercent >= 0 ? '#ff4d4f' : '#52c41a',
-                        backgroundColor: stock.changePercent >= 0
-                            ? 'rgba(255, 77, 79, 0.05)'
-                            : 'rgba(82, 196, 26, 0.05)',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        tension: 0.25,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } },
-                        y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } }
-                    }
-                }
-            });
-        }
-
-        function closeModal() {
-            document.getElementById('detailModal').classList.add('hidden');
-        }
-    </script>
+        <div class="card"><h3>技術指標</h3><ul><li>MA5 / MA20：最近 5 / 20 個有效交易日收盤價平均。</li><li>RSI(14)：以簡化 Wilder 平滑方式計算；歷史不足時顯示「資料不足」。</li><li>成交量：來源資料的 Volume 欄位；來源可能使用股數或其他標準，頁面以來源欄位數值呈現並避免自行假定為「張」。</li><li>當日漲跌幅：以目前收盤價與前一筆有效交易日收盤價計算。</li></ul></div>
+        <div class="card"><h3>成本估算假設</h3><p>預設手續費率 0.1425%（買賣各計一次）、手續費折扣 6 折、一般股票賣出證交稅 0.3%。不同商品、交易方式與法規可能有不同費率；請在「成本設定」調整並自行確認最新規定。</p><p>估算公式會對買入與賣出分別計算手續費，賣出另計證交稅，停損風險及停利目標均以淨額估算。</p></div>
+      </div>
+    </section>
+    <div class="foot">Stock Rebound Radar · GitHub Pages 單檔版 · 資料延遲與完整性取決於外部來源 · 本工具不構成投資建議。</div>
+  </main>
+</div>
+</div>
+<div id="modalRoot"></div><div id="toastRoot"></div>
+<script>
+"use strict";
+const DATA_BASE="https://raw.githubusercontent.com/voidful/tw_stocker/main/data/";
+const SYMBOLS=[
+ ["2330","台積電"],["2317","鴻海"],["2454","聯發科"],["2308","台達電"],["2382","廣達"],
+ ["2303","聯電"],["2881","富邦金"],["2882","國泰金"],["2891","中信金"],["2886","兆豐金"],
+ ["2344","華邦電"],["2408","南亞科"],["3711","日月光投控"],["2603","長榮"],["2615","萬海"],
+ ["3037","欣興"],["3231","緯創"],["6669","緯穎"],["2376","技嘉"],["3017","奇鋐"],
+ ["0050","元大台灣50"],["0056","元大高股息"],["00878","國泰永續高股息"],["00919","群益台灣精選高息"]
+];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let histories=new Map(), currentRows=[], selectedSymbol=null, activeRank="decliners", currentView="overview";
+let watchlist=readStore("srr_watchlist",[]), trades=readStore("srr_trades",[]);
+let fees=readStore("srr_fees",{commission:.001425,discount:.6,tax:.003});
+function readStore(k,f){try{const x=JSON.parse(localStorage.getItem(k));return x??f}catch{return f}}
+function writeStore(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch{toast("瀏覽器儲存失敗；請檢查是否停用網站儲存空間。");return false}}
+function toast(msg){const root=$("#toastRoot");root.innerHTML=`<div class="toast">${esc(msg)}</div>`;setTimeout(()=>root.innerHTML="",3200)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fmt(n,d=2){return Number.isFinite(n)?n.toLocaleString("zh-TW",{minimumFractionDigits:d,maximumFractionDigits:d}):"—"}
+function money(n){return "NT$ "+Math.round(n).toLocaleString("zh-TW")}
+function pct(n){return Number.isFinite(n)?`${n>0?"+":""}${n.toFixed(2)}%`:"—"}
+function isFiniteNum(n){return Number.isFinite(n)}
+async function loadData(){
+ $("#dataStatus").textContent="正在載入資料…";$("#marketNote").textContent="正在嘗試讀取公開歷史行情；來源可能有延遲或個別股票缺漏。";
+ $("#stockRows").innerHTML='<tr><td colspan="8" class="empty">正在下載歷史資料…</td></tr>';
+ let success=0,errors=[];
+ const batch=SYMBOLS.map(async ([symbol,name])=>{
+   try{
+    const r=await fetch(DATA_BASE+encodeURIComponent(symbol)+".csv",{cache:"no-cache"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const text=await r.text();const parsed=parseCsv(text);
+    if(parsed.length<2)throw new Error("CSV 無足夠資料");
+    // Source files may contain intraday bars (Datetime) rather than daily candles.
+    // Sort by the full timestamp, then aggregate each calendar date into one daily OHLCV row.
+    const rows=aggregateDaily(parsed,symbol,name);
+    if(!rows.length)throw new Error("無有效日線行情列");
+    histories.set(symbol,{symbol,name,rows,source:"voidful/tw_stocker",lastDate:rows.at(-1).date});success++;
+   }catch(e){errors.push(symbol);histories.delete(symbol)}
+ });
+ await Promise.all(batch);
+ if(success===0){
+   $("#dataStatus").textContent="資料載入失敗";
+   $("#marketNote").innerHTML=`目前無法從公開來源載入行情（可能是網路、來源路徑或格式變更）。本網站不會用假資料代替。請稍後重試，或在 <a href="https://github.com/voidful/tw_stocker" target="_blank" rel="noopener">資料來源 Repository</a> 查看可用資料。`;
+   $("#stockRows").innerHTML='<tr><td colspan="8" class="empty">沒有成功載入任何行情。請按「重新載入」或檢查網路連線。</td></tr>';
+   $("#dateSelect").innerHTML='<option value="">無可用資料</option>';$("#resultCount").textContent="0 檔股票成功載入";updateMetrics([]);return;
+ }
+ $("#dataStatus").textContent=`歷史資料 · ${success} 檔成功`;
+ const dates=[...new Set([...histories.values()].flatMap(h=>h.rows.map(r=>r.date)))].sort();
+ const last=dates.at(-1);
+ $("#dateSelect").innerHTML=dates.slice(-20).reverse().map(d=>`<option value="${d}" ${d===last?"selected":""}>${d}</option>`).join("");
+ $("#marketNote").textContent=`資料來源：公開 GitHub Repository voidful/tw_stocker；已依日期將盤中 K 線彙整為日 OHLCV（開盤取首筆、最高／最低取日內極值、收盤取末筆、成交量加總）。成功載入 ${success}/${SYMBOLS.length} 檔觀察清單股票；${errors.length?`有 ${errors.length} 檔無法載入（${errors.slice(0,8).join(", ")}${errors.length>8?"…":""}）。`:"觀察清單股票皆已載入。"} 日期依各股票 CSV 實際資料為準；請留意不同股票可能有不同資料起訖日。`;
+ renderAll();
+}
+function parseCsv(text){
+ const lines=text.replace(/^\uFEFF/,"").trim().split(/\r?\n/);if(!lines.length)return[];
+ const parseLine=line=>{let out=[],cur="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&q){cur+='"';i++}else if(c==='"')q=!q;else if(c===","&&!q){out.push(cur);cur=""}else cur+=c}out.push(cur);return out};
+ const heads=parseLine(lines.shift()).map(x=>x.trim().toLowerCase());
+ return lines.map(line=>{const vals=parseLine(line);const o={};heads.forEach((h,i)=>o[h]=(vals[i]??"").trim());return o});
+}
+function aggregateDaily(parsed,symbol,name){
+ const timeOf=o=>String(o.datetime||o.date||o.timestamp||"").trim();
+ const sorted=[...parsed].sort((a,b)=>timeOf(a).localeCompare(timeOf(b)));
+ const daily=new Map();
+ for(const o of sorted){
+  const r=normalizeRow(o,symbol,name);if(!r||!(r.close>0))continue;
+  const key=r.date;
+  if(!daily.has(key)){daily.set(key,{...r,volume:Number.isFinite(r.volume)?r.volume:0});continue;}
+  const d=daily.get(key);
+  if(Number.isFinite(r.high))d.high=Number.isFinite(d.high)?Math.max(d.high,r.high):r.high;
+  if(Number.isFinite(r.low))d.low=Number.isFinite(d.low)?Math.min(d.low,r.low):r.low;
+  // The sorted last intraday bar supplies the daily close.
+  d.close=r.close;
+  if(Number.isFinite(r.volume))d.volume+=r.volume;
+ }
+ return [...daily.values()].sort((a,b)=>a.date.localeCompare(b.date));
+}
+function normalizeRow(o,symbol,name){
+ const date=String(o.date||o.datetime||"").slice(0,10).replaceAll("/","-");
+ const n=o=>{const x=Number(String(o??"").replaceAll(",",""));return Number.isFinite(x)?x:NaN};
+ const open=n(o.open),high=n(o.high),low=n(o.low),close=n(o.close),volume=n(o.volume);
+ if(!date||!isFiniteNum(close))return null;
+ return {date,symbol,name,open,high,low,close,volume};
+}
+function enrich(h){
+ const a=h.rows;
+ return a.map((r,i)=>{
+  const prev=a[i-1],slice5=a.slice(Math.max(0,i-4),i+1),slice20=a.slice(Math.max(0,i-19),i+1);
+  const ma5=slice5.length===5?slice5.reduce((s,x)=>s+x.close,0)/5:NaN;
+  const ma20=slice20.length===20?slice20.reduce((s,x)=>s+x.close,0)/20:NaN;
+  const change=prev?r.close-prev.close:NaN,changePct=prev?(r.close/prev.close-1)*100:NaN;
+  const vol20=slice20.length===20?slice20.reduce((s,x)=>s+(Number.isFinite(x.volume)?x.volume:0),0)/20:NaN;
+  const volumeRatio=vol20>0?r.volume/vol20:NaN;
+  const rsi=calcRsi(a,i,14);
+  const return5=i>=5?(r.close/a[i-5].close-1)*100:NaN;
+  const score=scoreRebound({changePct,volumeRatio,rsi,close:r.close,ma5,ma20,return5});
+  return {...r,change,changePct,ma5,ma20,volumeRatio,rsi,return5,score};
+ });
+}
+function calcRsi(a,i,period=14){
+ if(i<period)return NaN;
+ let gains=0,losses=0;
+ for(let j=i-period+1;j<=i;j++){const diff=a[j].close-a[j-1].close;if(diff>0)gains+=diff;else losses-=diff}
+ const avgG=gains/period,avgL=losses/period;if(avgL===0)return avgG===0?50:100;
+ return 100-(100/(1+avgG/avgL));
+}
+function scoreRebound(x){
+ let s=0;
+ if(Number.isFinite(x.changePct)&&x.changePct<0)s+=Math.min(30,Math.abs(x.changePct)*5);
+ if(Number.isFinite(x.volumeRatio))s+=Math.min(20,Math.max(0,(x.volumeRatio-0.7)*12));
+ if(Number.isFinite(x.rsi)){if(x.rsi<25)s+=20;else if(x.rsi<30)s+=17;else if(x.rsi<35)s+=14;else if(x.rsi<40)s+=10;else if(x.rsi<45)s+=5}
+ if(Number.isFinite(x.ma5)&&Number.isFinite(x.ma20)){if(x.close<x.ma5&&x.close<x.ma20)s+=15;else if(x.close<x.ma5)s+=9;else if(x.close<x.ma20)s+=5}
+ if(Number.isFinite(x.return5)){if(x.return5<=-10)s+=15;else if(x.return5<=-6)s+=12;else if(x.return5<=-3)s+=8;else if(x.return5<0)s+=4}
+ return Math.round(Math.min(100,s));
+}
+function getRows(date){
+ const out=[];
+ for(const h of histories.values()){
+  const a=enrich(h),r=a.find(x=>x.date===date);if(r)out.push(r);
+ }
+ return out;
+}
+function renderAll(){currentRows=getRows($("#dateSelect").value);updateMetrics(currentRows);renderRanking();renderWatchlist();renderTrades();if(selectedSymbol&&histories.has(selectedSymbol))renderDetail(selectedSymbol);else if(currentRows.length)selectStock(currentRows[0].symbol);renderChart(selectedSymbol)}
+function updateMetrics(rows){
+ $("#upCount").textContent=rows.filter(x=>x.changePct>0).length.toLocaleString();
+ $("#downCount").textContent=rows.filter(x=>x.changePct<0).length.toLocaleString();
+ const up=rows.filter(x=>Number.isFinite(x.changePct)).sort((a,b)=>b.changePct-a.changePct)[0],down=rows.filter(x=>Number.isFinite(x.changePct)).sort((a,b)=>a.changePct-b.changePct)[0];
+ $("#maxUp").textContent=up?pct(up.changePct):"—";$("#maxUpName").textContent=up?`${up.name}（${up.symbol}）`:"資料不足";
+ $("#maxDown").textContent=down?pct(down.changePct):"—";$("#maxDownName").textContent=down?`${down.name}（${down.symbol}）`:"資料不足";
+}
+function rankRows(){
+ const query=$("#searchInput").value.trim().toLowerCase(),min=Math.max(0,Number($("#minAbsMove").value)||0),vol=Math.max(0,Number($("#minVolume").value)||0);
+ let a=currentRows.filter(x=>(!query||x.symbol.toLowerCase().includes(query)||x.name.toLowerCase().includes(query))&&(Math.abs(x.changePct||0)>=min)&&(Number(x.volume)||0)>=vol);
+ if(activeRank==="decliners")a.sort((x,y)=>(x.changePct??Infinity)-(y.changePct??Infinity));
+ if(activeRank==="gainers")a.sort((x,y)=>(y.changePct??-Infinity)-(x.changePct??-Infinity));
+ if(activeRank==="volume")a.sort((x,y)=>(y.volume||0)-(x.volume||0));
+ if(activeRank==="rebound")a.sort((x,y)=>y.score-x.score);
+ return a.slice(0,Number($("#limitSelect").value)||20);
+}
+function renderRanking(){
+ const rows=rankRows();$("#stockRows").innerHTML=rows.length?rows.map(r=>`<tr>
+ <td><button class="star" data-star="${r.symbol}" title="加入／移除自選">${watchlist.includes(r.symbol)?"★":"☆"}</button></td>
+ <td><div class="stock-name">${esc(r.name)}</div><div class="stock-code">${esc(r.symbol)}</div></td>
+ <td>${fmt(r.close)}</td><td class="${r.changePct>0?"up":r.changePct<0?"down":"neutral"}">${pct(r.changePct)}</td>
+ <td>${Number.isFinite(r.volume)?Math.round(r.volume).toLocaleString():"—"}</td><td>${fmt(r.rsi,1)}</td><td><span class="pill">${r.score}</span></td>
+ <td><div class="row-actions"><button class="small-btn" data-analyze="${r.symbol}">分析</button><button class="small-btn" data-trade="${r.symbol}">模擬交易</button></div></td></tr>`).join(""):'<tr><td colspan="8" class="empty">目前沒有符合條件的資料。</td></tr>';
+ $("#resultCount").textContent=`顯示 ${rows.length} 檔；日期 ${$("#dateSelect").value||"—"}。漲跌幅以各股票前一筆可用交易日收盤價計算。`;
+}
+function selectStock(symbol){selectedSymbol=symbol;renderDetail(symbol);renderChart(symbol)}
+function renderDetail(symbol){
+ const h=histories.get(symbol);if(!h)return;const a=enrich(h),date=$("#dateSelect").value;const r=a.find(x=>x.date===date)||a.at(-1);
+ $("#detailPanel").innerHTML=`<div class="detail-title"><div><h3>${esc(h.name)} <span class="stock-code">${esc(symbol)}</span></h3><div class="detail-price">${fmt(r.close)}</div><div class="${r.changePct>0?"up":r.changePct<0?"down":"neutral"}">${pct(r.changePct)}　${Number.isFinite(r.change)?(r.change>0?"+":"")+fmt(r.change):""}</div></div><div class="score-ring" style="--score:${r.score}%"><b>${r.score}</b></div></div>
+ <div class="hint">Rebound Score · 規則式觀察分數，非上漲機率</div>
+ <div class="detail-grid"><div class="mini"><span>成交量（來源欄位）</span><b>${fmt(r.volume,0)}</b></div><div class="mini"><span>量比（20 日均量）</span><b>${fmt(r.volumeRatio,2)}x</b></div><div class="mini"><span>RSI(14)</span><b>${fmt(r.rsi,1)}</b></div><div class="mini"><span>MA5</span><b>${fmt(r.ma5)}</b></div><div class="mini"><span>MA20</span><b>${fmt(r.ma20)}</b></div><div class="mini"><span>近 5 日報酬</span><b class="${r.return5<0?"down":"up"}">${pct(r.return5)}</b></div></div>
+ <div class="notice">${r.score>=70?"符合多項反彈觀察條件，但仍可能延續下跌。":r.score>=40?"部分條件值得觀察，需搭配走勢與風險管理。":"目前符合的反彈觀察條件較少。"} 歷史資料截至 ${esc(h.lastDate)}；所選日期為 ${esc(r.date)}。</div>
+ <div class="table-actions" style="margin-top:12px"><button data-star="${symbol}">${watchlist.includes(symbol)?"★ 已加入自選":"☆ 加入自選"}</button><button class="primary" data-trade="${symbol}">建立模擬交易</button></div>`;
+ $("#chartTitle").textContent=`${h.name} 收盤走勢`;$("#chartCode").textContent=symbol;
+}
+function renderChart(symbol){
+ const canvas=$("#priceChart"),ctx=canvas.getContext("2d"),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.max(1,rect.width*dpr);canvas.height=Math.max(1,rect.height*dpr);ctx.scale(dpr,dpr);
+ const w=rect.width,hgt=rect.height;ctx.clearRect(0,0,w,hgt);
+ const h=histories.get(symbol);if(!h){ctx.fillStyle="#91a3bb";ctx.fillText("載入個股後顯示走勢",16,30);return}
+ const a=enrich(h).slice(-20),vals=a.map(x=>x.close).filter(Number.isFinite);if(vals.length<2){ctx.fillStyle="#91a3bb";ctx.fillText("歷史資料不足，無法繪圖",16,30);return}
+ const min=Math.min(...vals),max=Math.max(...vals),pad={l:12,r:42,t:12,b:24},cw=w-pad.l-pad.r,ch=hgt-pad.t-pad.b;
+ ctx.font="10px sans-serif";ctx.strokeStyle="#26364d";ctx.fillStyle="#91a3bb";ctx.lineWidth=1;
+ for(let i=0;i<4;i++){const y=pad.t+ch*i/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText((max-(max-min)*i/3).toFixed(1),w-pad.r+4,y+3)}
+ const x=i=>pad.l+(cw*i/(a.length-1)),y=v=>pad.t+(max-v)/(max-min||1)*ch;
+ const drawLine=(key,color)=>{ctx.beginPath();let begun=false;a.forEach((r,i)=>{if(!Number.isFinite(r[key]))return;begun?ctx.lineTo(x(i),y(r[key])):(ctx.moveTo(x(i),y(r[key])),begun=true)});ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.stroke()};
+ drawLine("ma20","#f6c76b");drawLine("ma5","#2dd4a7");drawLine("close","#78aaff");
+ a.forEach((r,i)=>{if(i===0||i===a.length-1||i%Math.ceil(a.length/4)===0){ctx.fillStyle="#91a3bb";ctx.fillText(r.date.slice(5),x(i)-13,hgt-6)}});
+ $("#chartHint").textContent=`顯示最近 ${a.length} 筆收盤資料；MA5 / MA20 歷史不足時不繪製。資料源：${h.source}。`;
+}
+function renderWatchlist(){
+ const rows=watchlist.map(s=>currentRows.find(x=>x.symbol===s)||(()=>{const h=histories.get(s);if(!h)return null;const r=enrich(h).find(x=>x.date===$("#dateSelect").value);return r?{...r,name:h.name,symbol:s}:null})()).filter(Boolean);
+ $("#watchRows").innerHTML=rows.length?rows.map(r=>`<tr><td><b>${esc(r.name)}</b><div class="stock-code">${esc(r.symbol)}</div></td><td>${fmt(r.close)}</td><td class="${r.changePct>0?"up":r.changePct<0?"down":"neutral"}">${pct(r.changePct)}</td><td>${r.score}</td><td><button class="small-btn" data-analyze="${r.symbol}">分析</button> <button class="small-btn danger" data-unstar="${r.symbol}">移除</button></td></tr>`).join(""):'<tr><td colspan="5" class="empty">尚未加入自選股，請到市場總覽按 ☆。</td></tr>';
+}
+function toggleWatch(symbol){watchlist=watchlist.includes(symbol)?watchlist.filter(x=>x!==symbol):[...watchlist,symbol];writeStore("srr_watchlist",watchlist);renderRanking();renderWatchlist();if(selectedSymbol)renderDetail(selectedSymbol);toast(watchlist.includes(symbol)?"已加入自選股":"已移除自選股")}
+function feeCalc(price,shares,side){const gross=price*shares,commission=Math.round(gross*fees.commission*fees.discount),tax=side==="sell"?Math.round(gross*fees.tax):0;return {gross,commission,tax,total:side==="buy"?gross+commission:gross-commission-tax}}
+function tradeNumbers(t){const buy=feeCalc(t.entry,t.shares,"buy"),stop=feeCalc(t.stop,t.shares,"sell"),target=feeCalc(t.target,t.shares,"sell");return {risk:buy.total-stop.total,reward:target.total-buy.total,buyCost:buy.commission,stopCost:stop.commission+stop.tax,targetCost:target.commission+target.tax,ratio:(target.total-buy.total)>0?(buy.total-stop.total)/(target.total-buy.total):NaN}}
+function renderTrades(){
+ $("#tradeCount").textContent=trades.length;const nums=trades.map(tradeNumbers);$("#totalRisk").textContent=money(nums.reduce((s,n)=>s+Math.max(0,n.risk),0));$("#totalReward").textContent=money(nums.reduce((s,n)=>s+n.reward,0));
+ $("#tradeRows").innerHTML=trades.length?trades.map((t,i)=>{const n=tradeNumbers(t);return `<tr><td><b>${esc(t.name)}</b><div class="stock-code">${esc(t.symbol)}</div></td><td>${fmt(t.entry)}</td><td>${Number(t.shares).toLocaleString()}</td><td>${fmt(t.stop)} / ${fmt(t.target)}</td><td class="down">${money(n.risk)}</td><td class="up">${money(n.reward)}</td><td>1 : ${fmt(n.ratio,2)}</td><td><button class="small-btn" data-edit="${i}">編輯</button> <button class="small-btn danger" data-delete="${i}">刪除</button></td></tr>`}).join(""):'<tr><td colspan="8" class="empty">尚無模擬交易。可從排行榜建立，或按「新增模擬交易」。</td></tr>';
+}
+function showModal(title,body){$("#modalRoot").innerHTML=`<div class="modal-backdrop" id="backdrop"><div class="modal" role="dialog" aria-modal="true"><div class="modal-head"><h3>${title}</h3><button class="xbtn" id="closeModal" aria-label="關閉">×</button></div>${body}</div></div>`;$("#closeModal").onclick=closeModal;$("#backdrop").onclick=e=>{if(e.target.id==="backdrop")closeModal()}}
+function closeModal(){$("#modalRoot").innerHTML=""}
+function openTradeForm(symbol="",index=-1){
+ const existing=index>=0?trades[index]:null,h=histories.get(symbol),last=h?enrich(h).find(x=>x.date===$("#dateSelect").value)||enrich(h).at(-1):null;
+ const t=existing||{symbol:symbol||"",name:h?.name||"",entry:last?.close||"",shares:100,stop:last?+(last.close*.97).toFixed(2):"",target:last?+(last.close*1.06).toFixed(2):"",note:""};
+ showModal(existing?"編輯模擬交易":"建立模擬交易",`<form id="tradeForm" class="form-grid">
+ <div><label>股票代號</label><input name="symbol" required value="${esc(t.symbol)}" placeholder="例如 2330"></div>
+ <div><label>股票名稱</label><input name="name" value="${esc(t.name)}" placeholder="例如 台積電"></div>
+ <div><label>進場價格（元）</label><input name="entry" type="number" min=".01" step=".01" required value="${esc(t.entry)}"></div>
+ <div><label>股數</label><input name="shares" type="number" min="1" step="1" required value="${esc(t.shares)}"></div>
+ <div><label>停損價格（元）</label><input name="stop" type="number" min=".01" step=".01" required value="${esc(t.stop)}"></div>
+ <div><label>停利價格（元）</label><input name="target" type="number" min=".01" step=".01" required value="${esc(t.target)}"></div>
+ <div class="wide"><label>備註（選填）</label><input name="note" value="${esc(t.note||"")}" placeholder="交易理由、觀察條件…"></div>
+ <div class="wide notice">成本估算使用目前設定的手續費與證交稅假設。這是交易計畫，不會送出真實委託。</div>
+ <div class="wide" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" id="cancelTrade">取消</button><button class="primary" type="submit">儲存計畫</button></div></form>`);
+ $("#cancelTrade").onclick=closeModal;
+ $("#tradeForm").onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),item={symbol:String(f.get("symbol")).trim(),name:String(f.get("name")).trim()||histories.get(String(f.get("symbol")).trim())?.name||String(f.get("symbol")).trim(),entry:Number(f.get("entry")),shares:Number(f.get("shares")),stop:Number(f.get("stop")),target:Number(f.get("target")),note:String(f.get("note")||"")};
+ if(!item.symbol||![item.entry,item.shares,item.stop,item.target].every(Number.isFinite)||item.entry<=0||item.shares<1||item.stop<=0||item.target<=0){toast("請輸入有效的交易數值");return}
+ if(item.stop>=item.entry||item.target<=item.entry){toast("多單模擬請設定停損低於進場、停利高於進場");return}
+ if(index>=0)trades[index]=item;else trades.push(item);writeStore("srr_trades",trades);closeModal();renderTrades();toast("模擬交易計畫已儲存")};
+}
+function openFees(){
+ showModal("交易成本設定",`<form id="feeForm" class="form-grid">
+ <div><label>單邊手續費率（%）</label><input name="commission" type="number" min="0" step=".0001" value="${(fees.commission*100).toFixed(4)}" required></div>
+ <div><label>手續費折扣（倍數）</label><input name="discount" type="number" min="0" max="1" step=".05" value="${fees.discount}" required></div>
+ <div><label>賣出證交稅（%）</label><input name="tax" type="number" min="0" step=".01" value="${(fees.tax*100).toFixed(3)}" required></div>
+ <div class="wide notice">預設一般股票：手續費率 0.1425%、折扣 6 折、賣出證交稅 0.3%。ETF、當沖與其他商品可能適用不同規定，請自行核對最新費率。</div>
+ <div class="wide" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" id="cancelFees">取消</button><button class="primary">儲存設定</button></div></form>`);
+ $("#cancelFees").onclick=closeModal;$("#feeForm").onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);fees={commission:Number(f.get("commission"))/100,discount:Number(f.get("discount")),tax:Number(f.get("tax"))/100};writeStore("srr_fees",fees);closeModal();renderTrades();toast("交易成本設定已更新")};
+}
+function exportCsv(){
+ const rows=rankRows();if(!rows.length){toast("目前沒有可匯出的資料");return}
+ const head=["日期","股票代號","股票名稱","收盤價","漲跌","漲跌幅(%)","成交量(來源欄位)","RSI14","MA5","MA20","量比","Rebound Score"];
+ const lines=[head,...rows.map(r=>[r.date,r.symbol,r.name,r.close,r.change,r.changePct,r.volume,r.rsi,r.ma5,r.ma20,r.volumeRatio,r.score])].map(row=>row.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(","));
+ const blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`stock-radar-${$("#dateSelect").value||"data"}.csv`;a.click();URL.revokeObjectURL(url);
+}
+function setView(view){currentView=view;["overview","watchlist","trades","method"].forEach(v=>$("#view-"+v).classList.toggle("hidden",v!==view));$$(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="watchlist")renderWatchlist();if(view==="trades")renderTrades()}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.view){setView(b.dataset.view);return}
+ if(b.dataset.rank){activeRank=b.dataset.rank;$$("[data-rank]").forEach(x=>x.classList.toggle("active",x===b));renderRanking();return}
+ if(b.dataset.star){toggleWatch(b.dataset.star);return}
+ if(b.dataset.unstar){toggleWatch(b.dataset.unstar);return}
+ if(b.dataset.analyze){selectStock(b.dataset.analyze);setView("overview");return}
+ if(b.dataset.trade){openTradeForm(b.dataset.trade);return}
+ if(b.dataset.delete!==undefined){trades.splice(Number(b.dataset.delete),1);writeStore("srr_trades",trades);renderTrades();toast("已刪除模擬交易");return}
+ if(b.dataset.edit!==undefined){openTradeForm(trades[Number(b.dataset.edit)].symbol,Number(b.dataset.edit));return}
+});
+$("#dateSelect").addEventListener("change",()=>{renderAll()});
+$("#searchInput").addEventListener("input",renderRanking);
+$("#applyFilters").onclick=renderRanking;
+$("#resetFilters").onclick=()=>{$("#searchInput").value="";$("#minAbsMove").value=0;$("#minVolume").value=0;$("#limitSelect").value="20";renderRanking()};
+$("#refreshBtn").onclick=()=>{histories.clear();loadData()};
+$("#newTradeBtn").onclick=()=>openTradeForm();
+$("#feeSettingsBtn").onclick=openFees;
+$("#exportBtn")?.addEventListener("click",exportCsv);
+const exportBtn=document.createElement("button");exportBtn.textContent="⇩ 匯出目前排行 CSV";exportBtn.onclick=exportCsv;$("#rankTabs").parentElement.appendChild(exportBtn);
+window.addEventListener("resize",()=>{if(selectedSymbol)renderChart(selectedSymbol)});
+loadData();
+</script>
 </body>
 </html>
-
